@@ -50,6 +50,12 @@ def scrape_product(driver, product_id, url_prefix, currency):
 
     return [product_name, product_price_pln, product_price_czk, product_code, product_description, product_measurement]
 
+def auto_adjust_columns(worksheet):
+    for column_cells in worksheet.columns:
+        length = max(len(str(cell.value)) for cell in column_cells)
+        worksheet.column_dimensions[column_cells[0].column_letter].width = length + 2
+
+
 def write_to_excel(workbook, data, sheet_name, currency):
     if not data:
         return
@@ -68,19 +74,14 @@ def write_to_excel(workbook, data, sheet_name, currency):
     for row_num, row_data in enumerate(data, 2):
         for col_num, cell_data in enumerate(row_data, 1):
             sheet.cell(row=row_num, column=col_num, value=cell_data)
+
+    auto_adjust_columns(sheet)
     
-
-    sum_price_pln_col = column_index_from_string("B")
-    sum_price_czk_col = column_index_from_string("C")
-    last_row = sheet.max_row
-    sheet.cell(row=last_row + 1, column=sum_price_pln_col, value=f"=SUM(B2:B{last_row})")
-    sheet.cell(row=last_row + 1, column=sum_price_czk_col, value=f"=SUM(C2:C{last_row})")
-
 def create_summary_sheet(workbook, data_cz, data_pl):
     summary_sheet = workbook.active
     summary_sheet.title = "Summary"
     
-    headers = ["Product Name", "Product Code", "Product Measurement", "Czech Price", "Poland Price"]
+    headers = ["Product Name", "Product Code", "Product Measurement", "Czech Price (CZK)", "Poland Price (CZK)"]
     for col_num, header in enumerate(headers, 1):
         summary_sheet.cell(row=1, column=col_num, value=header)
 
@@ -107,9 +108,10 @@ def create_summary_sheet(workbook, data_cz, data_pl):
     for col_num in range(1, 6):
         summary_sheet.cell(row=last_row + 1, column=col_num).font = openpyxl.styles.Font(bold=True)
 
+    auto_adjust_columns(summary_sheet)
 
 def main():
-    product_ids = "394.374.11, 395.006.24, 694.780.23"
+    product_ids = "492.284.74, 294.282.52, 994.329.72, 594.802.72, 203.322.54"
     product_id_list = [x.strip() for x in product_ids.split(",")]
 
     chrome_driver_path = "/Users/MarekHalska/Desktop/python/GIT/IKEA/chromedriver"
