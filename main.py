@@ -1,7 +1,9 @@
 import time
 import openpyxl
 import re
+import selenium
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,6 +27,10 @@ def scrape_product(driver, product_id, url_prefix, currency):
     time.sleep(5)
 
     links = driver.find_elements_by_css_selector(".pip-product-compact a")
+    
+    if not links:
+        return ["Not available"] * 6  # Return a list with 6 "Not available" values
+
     first_link = links[0].get_attribute("href")
     driver.execute_script(f"window.open('{first_link}', '_blank')")
     driver.switch_to.window(driver.window_handles[-1])
@@ -36,7 +42,13 @@ def scrape_product(driver, product_id, url_prefix, currency):
     
     product_code = driver.find_element_by_css_selector(".pip-product-identifier__value").text
     product_description = driver.find_element_by_css_selector(".pip-header-section__description-text").text
-    product_measurement = driver.find_element_by_css_selector(".pip-header-section__description-measurement").text
+    try:
+        product_measurement_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".pip-header-section__description-measurement")))
+        product_measurement = product_measurement_element.text
+    except TimeoutException:
+        product_measurement = "Not available"
+
+
 
     if currency == "PLN":
         product_price_pln = int(product_price_str)
