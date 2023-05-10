@@ -34,15 +34,17 @@ def get_exchange_rate(base_currency, target_currency):
 def scrape_product(driver, product_id, url_prefix, currency):
     url = f"{url_prefix}{product_id}"
     driver.get(url)
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
+    
+    try:
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
+    except TimeoutException:
+        return ["Product does not exist"] * 7  # Return a list with 7 "Product does not exist" values
 
+    try:
+        first_link = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".pip-product-compact a"))).get_attribute("href")
+    except TimeoutException:
+        return ["Product does not exist"] * 7  # Return a list with 7 "Product does not exist" values
 
-    links = driver.find_elements_by_css_selector(".pip-product-compact a")
-
-    if not links:
-        return ["Not available"] * 6  # Return a list with 6 "Not available" values
-
-    first_link = links[0].get_attribute("href")
     driver.execute_script(f"window.open('{first_link}', '_blank')")
     driver.switch_to.window(driver.window_handles[-1])
 
@@ -69,7 +71,7 @@ def scrape_product(driver, product_id, url_prefix, currency):
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
 
-    return [product_name, product_price_pln, product_price_czk, product_code, product_description, product_measurement]
+    return [product_name, product_price_pln, product_price_czk, product_code, product_description, product_measurement, first_link]
 
 
 def auto_adjust_columns(worksheet):
@@ -89,7 +91,7 @@ def write_to_excel(workbook, data, sheet_name, currency):
         sheet = workbook.create_sheet(sheet_name)
 
     headers = ["Product Name", "Product Price (PLN)", "Product Price (CZK)",
-               "Product Code", "Product Description", "Product Measurement"]
+               "Product Code", "Product Description", "Product Measurement", "Link of the item"]
     for col_num, header in enumerate(headers, 1):
         sheet.cell(row=1, column=col_num, value=header)
 
@@ -98,7 +100,6 @@ def write_to_excel(workbook, data, sheet_name, currency):
             sheet.cell(row=row_num, column=col_num, value=cell_data)
 
     auto_adjust_columns(sheet)
-
 
 def create_summary_sheet(workbook, data_cz, data_pl):
     summary_sheet = workbook.active
@@ -109,8 +110,8 @@ def create_summary_sheet(workbook, data_cz, data_pl):
         summary_sheet.cell(row=1, column=col_num, value=header)
 
     for index, (cz_row, pl_row) in enumerate(zip(data_cz, data_pl), 2):
-        product_name_cz, price_pln_cz, price_czk_cz, product_code_cz, product_description_cz, product_measurement_cz = cz_row
-        product_name_pl, price_pln_pl, price_czk_pl, product_code_pl, product_description_pl, product_measurement_pl = pl_row
+        product_name_cz, price_pln_cz, price_czk_cz, product_code_cz, product_description_cz, product_measurement_cz, link_cz = cz_row
+        product_name_pl, price_pln_pl, price_czk_pl, product_code_pl, product_description_pl, product_measurement_pl, link_pl = pl_row
 
         if product_name_cz == product_name_pl:
             product_name = product_name_cz
@@ -132,6 +133,7 @@ def create_summary_sheet(workbook, data_cz, data_pl):
         summary_sheet.cell(row=last_row + 1, column=col_num).font = openpyxl.styles.Font(bold=True)
 
     auto_adjust_columns(summary_sheet)
+
 
 
 def main(product_id_list, output_file_path):
