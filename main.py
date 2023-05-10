@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from openpyxl.utils import column_index_from_string
+import tkinter.filedialog as filedialog
 import requests
 import json
 import requests
@@ -20,6 +21,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import threading
+import tkinter.filedialog as filedialog
+from datetime import datetime
 
 
 def get_exchange_rate(base_currency, target_currency):
@@ -131,7 +134,7 @@ def create_summary_sheet(workbook, data_cz, data_pl):
     auto_adjust_columns(summary_sheet)
 
 
-def main(product_id_list):
+def main(product_id_list, output_file_path):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     chrome_driver_path = os.path.join(current_dir, "chromedriver")
     driver = webdriver.Chrome(chrome_driver_path)
@@ -154,8 +157,7 @@ def main(product_id_list):
     write_to_excel(workbook, data_pl, "Poland Data", "PLN")
     create_summary_sheet(workbook, data_cz, data_pl)
 
-    workbook.save("ikea_products.xlsx")
-
+    workbook.save(output_file_path)
     return data_cz, data_pl
 
 def start_scraping():
@@ -166,12 +168,17 @@ def start_scraping():
         messagebox.showerror("Error", "Please enter the product IDs.")
         return
 
+    if not output_folder_var.get():
+        messagebox.showerror("Error", "Please choose the output folder.")
+        return
+
     start_button.config(state=tk.DISABLED)
     progress_label.config(text="Scraping...")
 
     def run_scraping():
         try:
-            data_cz, data_pl = main(product_id_list)
+            output_file_path = get_output_file_path()  # Get the output file path
+            data_cz, data_pl = main(product_id_list, output_file_path)  # Pass output_file_path to main()
             summary = f"Scraped {len(data_cz)} Czech and {len(data_pl)} Poland products."
             progress_label.config(text=summary)
         except Exception as e:
@@ -180,8 +187,19 @@ def start_scraping():
         finally:
             start_button.config(state=tk.NORMAL)
 
+
     threading.Thread(target=run_scraping).start()
 
+
+def browse_output_folder():
+    output_folder = filedialog.askdirectory()
+    output_folder_var.set(output_folder)
+
+def get_output_file_path():
+    current_datetime = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_folder = output_folder_var.get()
+    output_file_name = f"ikea_products_{current_datetime}.xlsx"
+    return os.path.join(output_folder, output_file_name)
 
 app = tk.Tk()
 app.title("IKEA Product Scraper")
@@ -195,12 +213,20 @@ product_ids_label.grid(row=0, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 product_ids_entry = ttk.Entry(frame, width=60)
 product_ids_entry.grid(row=0, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
+output_folder_label = ttk.Label(frame, text="Output folder:")
+output_folder_label.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+output_folder_var = tk.StringVar()
+output_folder_entry = ttk.Entry(frame, width=60, textvariable=output_folder_var)
+output_folder_entry.grid(row=1, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+browse_button = ttk.Button(frame, text="Browse", command=browse_output_folder, padding=(5, 0))
+browse_button.grid(row=1, column=2, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
 start_button = ttk.Button(frame, text="Start Scraping", command=start_scraping)
-start_button.grid(row=1, column=0, columnspan=2, pady=(0, 10))
+start_button.grid(row=2, column=0, columnspan=3, pady=(0, 10))
 
 progress_label = ttk.Label(frame, text="", wraplength=300)
-progress_label.grid(row=2, column=0, columnspan=2)
+progress_label.grid(row=3, column=0, columnspan=3)
 
 app.mainloop()
-
-
