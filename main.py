@@ -1,7 +1,9 @@
 import time
 import openpyxl
 import re
+import os
 import selenium
+import datetime
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -14,6 +16,10 @@ import requests
 from bs4 import BeautifulSoup
 from yahoofinancials import YahooFinancials
 from forex_python.converter import CurrencyRates
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+import threading
 
 
 def get_exchange_rate(base_currency, target_currency):
@@ -21,13 +27,15 @@ def get_exchange_rate(base_currency, target_currency):
     exchange_rate = cr.get_rate(base_currency, target_currency)
     return exchange_rate
 
+
 def scrape_product(driver, product_id, url_prefix, currency):
     url = f"{url_prefix}{product_id}"
     driver.get(url)
-    time.sleep(5)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
+
 
     links = driver.find_elements_by_css_selector(".pip-product-compact a")
-    
+
     if not links:
         return ["Not available"] * 6  # Return a list with 6 "Not available" values
 
@@ -39,7 +47,7 @@ def scrape_product(driver, product_id, url_prefix, currency):
     product_name = driver.find_element_by_css_selector(".pip-header-section__title--big").text
     product_price = driver.find_element_by_css_selector(".pip-temp-price__integer").text
     product_price_str = re.sub(r'[^\d]', '', product_price)
-    
+
     product_code = driver.find_element_by_css_selector(".pip-product-identifier__value").text
     product_description = driver.find_element_by_css_selector(".pip-header-section__description-text").text
     try:
@@ -48,19 +56,18 @@ def scrape_product(driver, product_id, url_prefix, currency):
     except TimeoutException:
         product_measurement = "Not available"
 
-
-
     if currency == "PLN":
         product_price_pln = int(product_price_str)
         product_price_czk = int(product_price_str) * get_exchange_rate("PLN", "CZK")
     elif currency == "CZK":
         product_price_czk = int(product_price_str)
         product_price_pln = int(product_price_str) * get_exchange_rate("CZK", "PLN")
-    
+
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
 
     return [product_name, product_price_pln, product_price_czk, product_code, product_description, product_measurement]
+
 
 def auto_adjust_columns(worksheet):
     for column_cells in worksheet.columns:
@@ -79,7 +86,7 @@ def write_to_excel(workbook, data, sheet_name, currency):
         sheet = workbook.create_sheet(sheet_name)
 
     headers = ["Product Name", "Product Price (PLN)", "Product Price (CZK)",
-    "Product Code", "Product Description", "Product Measurement"]
+               "Product Code", "Product Description", "Product Measurement"]
     for col_num, header in enumerate(headers, 1):
         sheet.cell(row=1, column=col_num, value=header)
 
@@ -88,11 +95,12 @@ def write_to_excel(workbook, data, sheet_name, currency):
             sheet.cell(row=row_num, column=col_num, value=cell_data)
 
     auto_adjust_columns(sheet)
-    
+
+
 def create_summary_sheet(workbook, data_cz, data_pl):
     summary_sheet = workbook.active
     summary_sheet.title = "Summary"
-    
+
     headers = ["Product Name", "Product Code", "Product Measurement", "Czech Price (CZK)", "Poland Price (CZK)"]
     for col_num, header in enumerate(headers, 1):
         summary_sheet.cell(row=1, column=col_num, value=header)
@@ -122,11 +130,10 @@ def create_summary_sheet(workbook, data_cz, data_pl):
 
     auto_adjust_columns(summary_sheet)
 
-def main():
-    product_ids = "492.284.74, 294.282.52, 994.329.72, 594.802.72, 203.322.54"
-    product_id_list = [x.strip() for x in product_ids.split(",")]
 
-    chrome_driver_path = "/Users/MarekHalska/Desktop/python/GIT/IKEA/chromedriver"
+def main(product_id_list):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    chrome_driver_path = os.path.join(current_dir, "chromedriver")
     driver = webdriver.Chrome(chrome_driver_path)
 
     data_cz = []
@@ -135,14 +142,12 @@ def main():
     for product_id in product_id_list:
         data_cz.append(scrape_product(driver, product_id, url_prefix_cz, target_currency))
 
-
     data_pl = []
     url_prefix_pl = "https://www.ikea.com/pl/pl/search/?q="
     for product_id in product_id_list:
         data_pl.append(scrape_product(driver, product_id, url_prefix_pl, "PLN"))
 
     driver.quit()
-
 
     workbook = openpyxl.Workbook()
     write_to_excel(workbook, data_cz, "Czech Data", "CZK")
@@ -151,5 +156,51 @@ def main():
 
     workbook.save("ikea_products.xlsx")
 
-if __name__ == "__main__":
-    main()
+    return data_cz, data_pl
+
+def start_scraping():
+    product_ids = product_ids_entry.get()
+    product_id_list = [x.strip() for x in product_ids.split(",")]
+
+    if not product_id_list:
+        messagebox.showerror("Error", "Please enter the product IDs.")
+        return
+
+    start_button.config(state=tk.DISABLED)
+    progress_label.config(text="Scraping...")
+
+    def run_scraping():
+        try:
+            data_cz, data_pl = main(product_id_list)
+            summary = f"Scraped {len(data_cz)} Czech and {len(data_pl)} Poland products."
+            progress_label.config(text=summary)
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            progress_label.config(text="")
+        finally:
+            start_button.config(state=tk.NORMAL)
+
+    threading.Thread(target=run_scraping).start()
+
+
+app = tk.Tk()
+app.title("IKEA Product Scraper")
+
+frame = ttk.Frame(app, padding="10")
+frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+product_ids_label = ttk.Label(frame, text="Product IDs (comma separated):")
+product_ids_label.grid(row=0, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+product_ids_entry = ttk.Entry(frame, width=60)
+product_ids_entry.grid(row=0, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+start_button = ttk.Button(frame, text="Start Scraping", command=start_scraping)
+start_button.grid(row=1, column=0, columnspan=2, pady=(0, 10))
+
+progress_label = ttk.Label(frame, text="", wraplength=300)
+progress_label.grid(row=2, column=0, columnspan=2)
+
+app.mainloop()
+
+
