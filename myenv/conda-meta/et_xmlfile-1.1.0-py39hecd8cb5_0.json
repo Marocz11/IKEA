@@ -1,0 +1,101 @@
+{
+  "build": "py39hecd8cb5_0",
+  "build_number": 0,
+  "channel": "https://repo.anaconda.com/pkgs/main/osx-64",
+  "constrains": [],
+  "depends": [
+    "python >=3.9,<3.10.0a0"
+  ],
+  "extracted_package_dir": "/Users/MarekHalska/opt/anaconda3/pkgs/et_xmlfile-1.1.0-py39hecd8cb5_0",
+  "features": "",
+  "files": [
+    "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/PKG-INFO",
+    "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/SOURCES.txt",
+    "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/dependency_links.txt",
+    "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/top_level.txt",
+    "lib/python3.9/site-packages/et_xmlfile/__init__.py",
+    "lib/python3.9/site-packages/et_xmlfile/__pycache__/__init__.cpython-39.pyc",
+    "lib/python3.9/site-packages/et_xmlfile/__pycache__/xmlfile.cpython-39.pyc",
+    "lib/python3.9/site-packages/et_xmlfile/xmlfile.py"
+  ],
+  "fn": "et_xmlfile-1.1.0-py39hecd8cb5_0.conda",
+  "legacy_bz2_md5": "e3753d2260deae00c636cbebd4568430",
+  "license": "MIT AND PSF-2.0",
+  "license_family": "MIT",
+  "link": {
+    "source": "/Users/MarekHalska/opt/anaconda3/pkgs/et_xmlfile-1.1.0-py39hecd8cb5_0",
+    "type": 1
+  },
+  "md5": "4072a48c2e806021effca271e32c0698",
+  "name": "et_xmlfile",
+  "package_tarball_full_path": "/Users/MarekHalska/opt/anaconda3/pkgs/et_xmlfile-1.1.0-py39hecd8cb5_0.conda",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/PKG-INFO",
+        "path_type": "hardlink",
+        "sha256": "5e4b0b1e38e59e32f723f67915651e889bfa4e356a4d60d39ca5ad7a6f638101",
+        "sha256_in_prefix": "5e4b0b1e38e59e32f723f67915651e889bfa4e356a4d60d39ca5ad7a6f638101",
+        "size_in_bytes": 1898
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/SOURCES.txt",
+        "path_type": "hardlink",
+        "sha256": "97dfd9876652225b12250e513e7f0065067c99c8f205129afba8d60982ef7fda",
+        "sha256_in_prefix": "97dfd9876652225b12250e513e7f0065067c99c8f205129afba8d60982ef7fda",
+        "size_in_bytes": 222
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/dependency_links.txt",
+        "path_type": "hardlink",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "sha256_in_prefix": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "size_in_bytes": 1
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile-1.1.0-py3.9.egg-info/top_level.txt",
+        "path_type": "hardlink",
+        "sha256": "df8fbbe1de4d3404604ec3f108cb5ae68dbc5e904d992374882661b66c76164f",
+        "sha256_in_prefix": "df8fbbe1de4d3404604ec3f108cb5ae68dbc5e904d992374882661b66c76164f",
+        "size_in_bytes": 11
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "fa84cac04eaea481b680e9a739ce0a2e057ea4a6c1c32fb38507e2cdb982aee4",
+        "sha256_in_prefix": "fa84cac04eaea481b680e9a739ce0a2e057ea4a6c1c32fb38507e2cdb982aee4",
+        "size_in_bytes": 269
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile/__pycache__/__init__.cpython-39.pyc",
+        "path_type": "hardlink",
+        "sha256": "8d2b18ca916edfc65a21da33b62648e2e976774d8ef194a2e16b91c2038f84ca",
+        "sha256_in_prefix": "8d2b18ca916edfc65a21da33b62648e2e976774d8ef194a2e16b91c2038f84ca",
+        "size_in_bytes": 432
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile/__pycache__/xmlfile.cpython-39.pyc",
+        "path_type": "hardlink",
+        "sha256": "46ee107c6151492525d5742d34546280d47a6174b1c4a69b7960b106a15fe7e6",
+        "sha256_in_prefix": "46ee107c6151492525d5742d34546280d47a6174b1c4a69b7960b106a15fe7e6",
+        "size_in_bytes": 3201
+      },
+      {
+        "_path": "lib/python3.9/site-packages/et_xmlfile/xmlfile.py",
+        "path_type": "hardlink",
+        "sha256": "fe1db44516f7a6d0d9eb15e8c4c53f5abc7cac6e9466c8344d2ec710eae8b738",
+        "sha256_in_prefix": "fe1db44516f7a6d0d9eb15e8c4c53f5abc7cac6e9466c8344d2ec710eae8b738",
+        "size_in_bytes": 3204
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "6b9e69c0f334f34720c36fdf22bb876d3e3be790f881225bbcc7b5b622ec011a",
+  "size": 9965,
+  "subdir": "osx-64",
+  "timestamp": 1621870963278,
+  "track_features": "",
+  "url": "https://repo.anaconda.com/pkgs/main/osx-64/et_xmlfile-1.1.0-py39hecd8cb5_0.conda",
+  "version": "1.1.0"
+}

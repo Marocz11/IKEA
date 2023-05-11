@@ -1,0 +1,35 @@
+==> 2023-05-11 13:13:32 <==
+# cmd: /Users/MarekHalska/opt/anaconda3/bin/conda create --prefix ./myenv python=3.9 selenium openpyxl requests beautifulsoup4
+# conda version: 23.3.1
++defaults/noarch::charset-normalizer-2.0.4-pyhd3eb1b0_0
++defaults/noarch::pycparser-2.21-pyhd3eb1b0_0
++defaults/noarch::tzdata-2023c-h04d1e81_0
++defaults/osx-64::beautifulsoup4-4.12.2-py39hecd8cb5_0
++defaults/osx-64::brotlipy-0.7.0-py39h9ed2024_1003
++defaults/osx-64::ca-certificates-2023.01.10-hecd8cb5_0
++defaults/osx-64::certifi-2022.12.7-py39hecd8cb5_0
++defaults/osx-64::cffi-1.15.1-py39h6c40b1e_3
++defaults/osx-64::cryptography-39.0.1-py39hf6deb26_0
++defaults/osx-64::et_xmlfile-1.1.0-py39hecd8cb5_0
++defaults/osx-64::idna-3.4-py39hecd8cb5_0
++defaults/osx-64::libcxx-14.0.6-h9765a3e_0
++defaults/osx-64::libffi-3.4.4-hecd8cb5_0
++defaults/osx-64::ncurses-6.4-hcec6c5f_0
++defaults/osx-64::openpyxl-3.0.10-py39hca72f7f_0
++defaults/osx-64::openssl-1.1.1t-hca72f7f_0
++defaults/osx-64::pip-23.0.1-py39hecd8cb5_0
++defaults/osx-64::pyopenssl-23.0.0-py39hecd8cb5_0
++defaults/osx-64::pysocks-1.7.1-py39hecd8cb5_0
++defaults/osx-64::python-3.9.16-h218abb5_2
++defaults/osx-64::readline-8.2-hca72f7f_0
++defaults/osx-64::requests-2.29.0-py39hecd8cb5_0
++defaults/osx-64::selenium-3.141.0-py39h9ed2024_1000
++defaults/osx-64::setuptools-66.0.0-py39hecd8cb5_0
++defaults/osx-64::soupsieve-2.4-py39hecd8cb5_0
++defaults/osx-64::sqlite-3.41.2-h6c40b1e_0
++defaults/osx-64::tk-8.6.12-h5d9f67b_0
++defaults/osx-64::urllib3-1.26.15-py39hecd8cb5_0
++defaults/osx-64::wheel-0.38.4-py39hecd8cb5_0
++defaults/osx-64::xz-5.4.2-h6c40b1e_0
++defaults/osx-64::zlib-1.2.13-h4dc903c_0
+# update specs: ['requests', 'python=3.9', 'openpyxl', 'selenium', 'beautifulsoup4']

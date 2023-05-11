@@ -1,0 +1,13 @@
+prefix=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv
+exec_prefix=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv
+libdir=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv/lib
+sharedlibdir=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv/lib
+includedir=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

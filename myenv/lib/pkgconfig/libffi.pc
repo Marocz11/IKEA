@@ -1,0 +1,11 @@
+prefix=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+toolexeclibdir=${libdir}
+includedir=/Users/MarekHalska/Desktop/python/GIT/IKEA-GIT/Bez názvu/myenv/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4.4
+Libs: -L${toolexeclibdir} -lffi
+Cflags: -I${includedir}

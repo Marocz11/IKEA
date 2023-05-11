@@ -24,7 +24,6 @@ import threading
 import tkinter.filedialog as filedialog
 from datetime import datetime
 
-
 def get_exchange_rate(base_currency, target_currency):
     cr = CurrencyRates()
     exchange_rate = cr.get_rate(base_currency, target_currency)
@@ -34,14 +33,14 @@ def get_exchange_rate(base_currency, target_currency):
 def scrape_product(driver, product_id, url_prefix, currency):
     url = f"{url_prefix}{product_id}"
     driver.get(url)
-    
+    waittime=int(10)
     try:
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
+        WebDriverWait(driver, waittime).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
     except TimeoutException:
         return ["Product does not exist"] * 7  # Return a list with 7 "Product does not exist" values
 
     try:
-        first_link = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".pip-product-compact a"))).get_attribute("href")
+        first_link = WebDriverWait(driver, waittime).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".pip-product-compact a"))).get_attribute("href")
     except TimeoutException:
         return ["Product does not exist"] * 7  # Return a list with 7 "Product does not exist" values
 
@@ -133,8 +132,6 @@ def create_summary_sheet(workbook, data_cz, data_pl):
         summary_sheet.cell(row=last_row + 1, column=col_num).font = openpyxl.styles.Font(bold=True)
 
     auto_adjust_columns(summary_sheet)
-
-
 
 def main(product_id_list, output_file_path):
     current_dir = os.path.dirname(os.path.abspath(__file__))
