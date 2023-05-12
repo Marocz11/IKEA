@@ -1,16 +1,24 @@
-import sys
 from cx_Freeze import setup, Executable
-import ssl
+import os
+import sys
+sys.setrecursionlimit(5000)
 
-build_exe_options = {
-    "packages": ["os", "selenium", "openpyxl", "tkinter", "bs4", "yahoofinancials", "forex_python", "re", "json", "requests", "datetime"],
-    "include_files": [(ssl.get_default_verify_paths().openssl_cafile, "cacert.pem")]
-}
+TCL_LIBRARY = "/Users/MarekHalska/opt/anaconda3/envs/myenv/lib"
+TK_LIBRARY = "/Users/MarekHalska/opt/anaconda3/envs/myenv/lib"
 
 setup(
-    name="IKEA Product Scraper",
+    name="YourAppName",
     version="0.1",
-    description="A script to scrape IKEA product information",
-    options={"build_exe": build_exe_options},
-    executables=[Executable("main.py", base=None)],
+    description="Your app description",
+    options={
+        "build_exe": {
+            "include_files": [
+                (os.path.join(TCL_LIBRARY, "tcl8.6"), "tcl"),
+                (os.path.join(TK_LIBRARY, "tk8.6"), "tk"),
+                # Include other files if needed
+            ],
+            # Add any other required options
+        }
+    },
+    executables=[Executable("main.py", base="Console")],
 )
