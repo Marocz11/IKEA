@@ -4,6 +4,7 @@ import re
 import os
 import selenium
 import datetime
+import sys
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -23,17 +24,24 @@ from tkinter import messagebox
 import threading
 import tkinter.filedialog as filedialog
 from datetime import datetime
-
-def get_exchange_rate(base_currency, target_currency):
-    cr = CurrencyRates()
-    exchange_rate = cr.get_rate(base_currency, target_currency)
-    return exchange_rate
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+import requests
 
 
-def scrape_product(driver, product_id, url_prefix, currency):
+def get_exchange_rate(base_currency, target_currency, exchange_rates):
+    try:
+        exchange_rate = exchange_rates[f"{base_currency}_{target_currency}"]
+        return exchange_rate
+    except KeyError:
+        raise Exception(f"Failed to fetch exchange rate for {base_currency} to {target_currency}")
+
+
+def scrape_product(driver, product_id, url_prefix, currency, exchange_rates):
+
     url = f"{url_prefix}{product_id}"
     driver.get(url)
-    waittime=int(10)
+    waittime=int(5)
     try:
         WebDriverWait(driver, waittime).until(EC.presence_of_element_located((By.CLASS_NAME, "pip-header-section")))
     except TimeoutException:
@@ -62,10 +70,10 @@ def scrape_product(driver, product_id, url_prefix, currency):
 
     if currency == "PLN":
         product_price_pln = int(product_price_str)
-        product_price_czk = int(product_price_str) * get_exchange_rate("PLN", "CZK")
+        product_price_czk = int(product_price_str) * get_exchange_rate("PLN", "CZK", exchange_rates)
     elif currency == "CZK":
         product_price_czk = int(product_price_str)
-        product_price_pln = int(product_price_str) * get_exchange_rate("CZK", "PLN")
+        product_price_pln = int(product_price_str) * get_exchange_rate("CZK", "PLN", exchange_rates)
 
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
@@ -133,22 +141,23 @@ def create_summary_sheet(workbook, data_cz, data_pl):
 
     auto_adjust_columns(summary_sheet)
 
-def main(product_id_list, output_file_path):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+def main(product_id_list, output_file_path, exchange_rates):
+    current_dir = os.path.dirname(sys.executable)
     chrome_driver_path = os.path.join(current_dir, "chromedriver")
-    driver = webdriver.Chrome(chrome_driver_path)
-
+    driver = webdriver.Chrome(executable_path=chrome_driver_path)
+    
+    # Build the path to the chromedriver in the same directory as the main executable
     data_cz = []
     url_prefix_cz = "https://www.ikea.com/cz/cs/search/?q="
     target_currency = "CZK"
     for product_id in product_id_list:
-        data_cz.append(scrape_product(driver, product_id, url_prefix_cz, target_currency))
+        data_cz.append(scrape_product(driver, product_id, url_prefix_cz, target_currency, exchange_rates))
 
     data_pl = []
     url_prefix_pl = "https://www.ikea.com/pl/pl/search/?q="
     for product_id in product_id_list:
-        data_pl.append(scrape_product(driver, product_id, url_prefix_pl, "PLN"))
-
+        data_pl.append(scrape_product(driver, product_id, url_prefix_pl, "PLN", exchange_rates))
+    
     driver.quit()
 
     workbook = openpyxl.Workbook()
@@ -176,8 +185,13 @@ def start_scraping():
 
     def run_scraping():
         try:
+            exchange_rates = {
+                "CZK_PLN": float(exchange_rate_czk_pln_var.get()),
+                "PLN_CZK": float(exchange_rate_pln_czk_var.get())
+            }
+
             output_file_path = get_output_file_path()  # Get the output file path
-            data_cz, data_pl = main(product_id_list, output_file_path)  # Pass output_file_path to main()
+            data_cz, data_pl = main(product_id_list, output_file_path, exchange_rates)  # Pass output_file_path and exchange_rates to main()
             summary = f"Scraped {len(data_cz)} Czech and {len(data_pl)} Poland products."
             progress_label.config(text=summary)
         except Exception as e:
@@ -185,7 +199,6 @@ def start_scraping():
             progress_label.config(text="")
         finally:
             start_button.config(state=tk.NORMAL)
-
 
     threading.Thread(target=run_scraping).start()
 
@@ -206,26 +219,46 @@ app.title("IKEA Product Scraper")
 frame = ttk.Frame(app, padding="10")
 frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
+exchange_rate_czk_pln_label = ttk.Label(frame, text="Exchange rate CZK-PLN:")
+exchange_rate_czk_pln_label.grid(row=4, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+exchange_rate_czk_pln_var = tk.StringVar()
+exchange_rate_czk_pln_entry = ttk.Entry(frame, width=10, textvariable=exchange_rate_czk_pln_var)
+exchange_rate_czk_pln_entry.insert(0, "0.1916")  # Default value
+exchange_rate_czk_pln_entry.grid(row=4, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+exchange_rate_pln_czk_label = ttk.Label(frame, text="Exchange rate PLN-CZK:")
+exchange_rate_pln_czk_label.grid(row=5, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+exchange_rate_pln_czk_var = tk.StringVar()
+exchange_rate_pln_czk_entry = ttk.Entry(frame, width=10, textvariable=exchange_rate_pln_czk_var)
+exchange_rate_pln_czk_entry.insert(0, "5.21")  # Default value
+exchange_rate_pln_czk_entry.grid(row=5, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+
+
 product_ids_label = ttk.Label(frame, text="Product IDs (comma separated):")
 product_ids_label.grid(row=0, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
 product_ids_entry = ttk.Entry(frame, width=60)
+product_ids_entry.insert(0, "703.780.70,194.311.70,694.780.23")
 product_ids_entry.grid(row=0, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
 output_folder_label = ttk.Label(frame, text="Output folder:")
-output_folder_label.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+output_folder_label.grid(row=2, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
 output_folder_var = tk.StringVar()
 output_folder_entry = ttk.Entry(frame, width=60, textvariable=output_folder_var)
-output_folder_entry.grid(row=1, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+output_folder_entry.insert(0, "/Users/MarekHalska/Downloads")
+output_folder_entry.grid(row=2, column=1, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
 browse_button = ttk.Button(frame, text="Browse", command=browse_output_folder, padding=(5, 0))
-browse_button.grid(row=1, column=2, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+browse_button.grid(row=2, column=2, padx=(0, 10), pady=(0, 10), sticky=tk.W)
 
 start_button = ttk.Button(frame, text="Start Scraping", command=start_scraping)
-start_button.grid(row=2, column=0, columnspan=3, pady=(0, 10))
+start_button.grid(row=6, column=0, columnspan=3, pady=(0, 10))
 
 progress_label = ttk.Label(frame, text="", wraplength=300)
-progress_label.grid(row=3, column=0, columnspan=3)
+progress_label.grid(row=7, column=0, columnspan=3)
 
 app.mainloop()
+
